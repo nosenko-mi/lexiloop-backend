@@ -1,0 +1,10 @@
+services:
+  lexiloop-api:
+    build: .
+    ports:
+      - "80:80"
+    env_file: ".env"
+    volumes:
+      - "./data:/lexiloop/data"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"     

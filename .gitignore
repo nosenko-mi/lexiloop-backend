@@ -1,0 +1,9 @@
+.venv
+.vscode
+source
+sql_querries
+data
+__pycache__
+
+tmp
+.env
