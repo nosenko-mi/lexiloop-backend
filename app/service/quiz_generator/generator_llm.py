@@ -1,4 +1,6 @@
+import asyncio
 import random
+from typing import List
 from pydantic import ValidationError
 from app.service.quiz_generator.generator_strategy import QuizGenerationStrategy
 from app.service.llm.config import LLM_MODEL, client
@@ -61,43 +63,26 @@ class SimpleQuizStrategyLLM(QuizGenerationStrategy):
             return None
 
 
-    async def generate_many(self, source: str, quiz_limit: int, answer_limit: int) -> list[AbstractQuiz]:
-        try:
-            sentences = [s.strip() for s in source.split('.') if s.strip()]
-            used_sentences = set()
-            quizzes: list[AbstractQuiz] = []
-
-            while len(quizzes) < quiz_limit and len(used_sentences) < len(sentences):
-                text = random.choice([s for s in sentences if s not in used_sentences])
-
-                quiz = await self.generate_single(text, answer_limit)
-                if quiz and quiz.is_valid():
-                    quizzes.append(quiz)
-                    used_sentences.add(text)
-
-
-            return quizzes
-            response = await client.beta.chat.completions.parse(
-                model=LLM_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.5,
-                response_format=MultipleSimpleQuizResponse, # type: ignore
-                max_tokens=4096,  # Adjust as needed
-            )
-            quizzes_response = response.choices[0].message.parsed
-            quizzes = []
-            if not quizzes_response:
-                return quizzes
-            
-            for quiz in quizzes_response.quizzes:
-                quizzes.append(
-                    SingleAnswerQuiz(text=quiz.text, answers=[SimpleAnswer(text=a.text, is_correct=a.is_correct) for a in quiz.answers])
-                )
-            return quizzes
-
-        except Exception as e:
-            print(f"Quiz generation failed: {e}")
+    async def generate_many(self, source: str, quiz_limit: int, answer_limit: int) -> List[AbstractQuiz]:
+        sentences = [s.strip() for s in source.split('.') if s.strip()]
+        if not sentences:
             return []
+
+        random.shuffle(sentences)
+        candidate_sentences = sentences[:quiz_limit]
+
+        tasks = [asyncio.create_task(self.generate_single(s, answer_limit)) for s in candidate_sentences]
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        quizzes: List[AbstractQuiz] = []
+        for quiz in results:
+            if isinstance(quiz, BaseException):
+                continue
+            if quiz and quiz.is_valid():
+                quizzes.append(quiz)
+
+        return quizzes
 
     # async def generate_many(self, source: str, quiz_limit: int, answer_limit: int) -> list[AbstractQuiz]:
     #     prompt = prompts.generate_many_grammar_prompt(source, quiz_limit, answer_limit)
