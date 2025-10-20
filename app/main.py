@@ -2,14 +2,13 @@ from fastapi import Depends, FastAPI
 
 from app.api.routers import data, quizzes, auth
 from app.db import models
-from app.db.database import SessionLocal, engine
-import nltk
+from app.db.database import engine
+# import nltk
 
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('averaged_perceptron_tagger_eng')
+# nltk.download('punkt')
+# nltk.download('punkt_tab')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('averaged_perceptron_tagger_eng')
 
 models.Base.metadata.create_all(bind=engine)
 
