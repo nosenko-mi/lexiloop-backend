@@ -1,10 +1,31 @@
 services:
+  # This is your new PostgreSQL database service
+  db:
+    image: postgres:15-alpine  # Using a specific, lightweight version
+    container_name: lexiloop-db-local
+    ports:
+      - "5433:5432"  # Expose port 5432 on your host machine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Environment variables to create the database and user
+    # These MUST match the variables in your .env file
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+
+  # This is your existing API service, with updates
   lexiloop-api:
     build: .
+    container_name: lexiloop-api-local
     ports:
-      - "80:80"
-    env_file: ".env"
-    volumes:
-      - "./data:/lexiloop/data"
+      - "8000:80"  # Run on host port 8000, container port 80
+    env_file: ".env"  # This file provides env vars to your app
+    depends_on:
+      - db  # Tells Docker to start the 'db' service first
     extra_hosts:
-      - "host.docker.internal:host-gateway"     
+      - "host.docker.internal:host-gateway"
+
+# Define a named volume to persist your database data
+volumes:
+  postgres_data:

@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16.4
+    container_name: lexiloop-db-local
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+
+  lexiloop-api:
+    build: .
+    container_name: lexiloop-api-local
+    ports:
+      - "8000:80"
+    env_file: ".env" 
+    depends_on:
+      - db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+# Define a named volume to persist your database data
+volumes:
+  postgres_data:
