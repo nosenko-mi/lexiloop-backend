@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.db import quiz_crud, text_crud, schemas
-from app.db.database import SessionLocal, TextsSessionLocal
+from app.db.database import SessionLocal
 from app.domain.quiz import SequenceQuiz, SingleAnswerQuiz
 from app.models.mappings import quiz_to_dto
 from app.models.quiz import QuizDTO
@@ -35,7 +35,7 @@ def get_db():
 
 
 def get_data_db():
-    db_texts = TextsSessionLocal()
+    db_texts = SessionLocal()
     try:
         yield db_texts
     finally:

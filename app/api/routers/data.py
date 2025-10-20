@@ -5,7 +5,7 @@ import shutil
 from os.path import isfile, isdir, join
 
 from app.db import text_crud, schemas
-from app.db.database import TextsSessionLocal
+from app.db.database import SessionLocal
 
 from app.service.text_parser.config import CHAPTER_TAG
 from nltk.tokenize import sent_tokenize
@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 def get_db():
-    db = TextsSessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
