@@ -18,6 +18,10 @@
 # """
 
 
+from app.service.llm.models import MultipleContextQuizResponse, SingleContextQuizResponse
+from app.service.llm.language_codes import LANGUAGE_CODES
+
+
 def generate_single_grammar_prompt(source: str, answers_limit: int) -> str:
     return f"""
 Your task is to generate one grammar quiz based on the input text.
@@ -78,4 +82,78 @@ Instructions:
 3. Replace the chosen verb with the character **'_'** in the quiz sentence.
 4. All verbs should be **unique across quizzes**.
 5. Be concise — do not repeat or rephrase unnecessarily.
+"""
+
+
+def generate_single_context_quiz_prompt(
+    source_text: str,
+    answer_limit: int,
+    user_native_language: str = "Ukrainian",
+    target_language: str = "English"
+) -> str:
+    """
+    Generates a prompt to create ONE advanced grammar-mimicry quiz.
+    """
+    native_lang_name = LANGUAGE_CODES.get(user_native_language, user_native_language)
+    target_lang_name = LANGUAGE_CODES.get(target_language, target_language)
+    return f"""
+You are an expert {target_lang_name} language tutor creating a contextual grammar quiz for an adult L2 learner whose native language is {native_lang_name}. The user has selected a sentence from a text they are reading.
+
+Your task is to analyze the source sentence and generate **one** high-quality, relevant grammar quiz.
+
+**Source Sentence:**
+"{source_text}"
+
+**Instructions:**
+1.  **Analyze and Choose:** First, carefully analyze the source text to find the most interesting and useful grammatical structure for an L2 learner. Choose the BEST quiz type from the following options:
+    * **grammar_mimicry:** Test a specific tense, conditional, or complex clause structure.
+    * **clause_connector:** Test understanding of conjunctions (e.g., despite, therefore, although).
+    * **phrasal_verb:** Test the meaning of a phrasal verb found in the text.
+    * **voice_transformation:** Test the ability to convert between active and passive voice.
+2.  **Generate Quiz:** Create a new question that forces the user to apply the structure you identified.
+3.  **Create Answers:** Create {answer_limit} answer choices. The correct answer must be the grammatically correct option. The incorrect answers should be plausible common mistakes that a {native_lang_name} speaker might make.
+4.  **Explain:** Provide a concise, helpful explanation in {native_lang_name} for the correct answer.
+5.  **Format:** Respond with ONLY a single, valid JSON object that follows the schema below.
+6. Replace the chosen verb/phrase with exactly one underscore character (_) to create the gap-fill quiz question. Example: "She _ out of the house."
+
+**JSON Output Schema:**
+{SingleContextQuizResponse.model_json_schema()}
+
+Ensure your quiz has exactly {answer_limit} answers.
+"""
+
+
+def generate_context_quiz_prompt(
+    source_text: str,
+    quiz_limit: int,
+    answer_limit: int,
+    user_native_language: str = "Ukrainian",
+    target_language: str = "English"
+) -> str:
+    native_lang_name = LANGUAGE_CODES.get(user_native_language, user_native_language)
+    target_lang_name = LANGUAGE_CODES.get(target_language, target_language)
+    return f"""
+You are an expert {target_lang_name} language tutor creating a contextual grammar quiz for an adult L2 learner whose native language is {native_lang_name}. The user has selected a sentence from a text they are reading.
+
+Your task is to analyze the source text and generate {quiz_limit} high-quality, relevant grammar quizzes.
+
+**Source Text:**
+"{source_text}"
+
+**Instructions:**
+1.  **Analyze and Choose:** First, carefully analyze the source text to find the most interesting and useful grammatical structures for an L2 learner. Based on your analysis, choose the BEST quiz type from the following options for each quiz you generate:
+    * **grammar_mimicry:** Test a specific tense, conditional, or complex clause structure.
+    * **clause_connector:** Test understanding of conjunctions (e.g., despite, therefore, although).
+    * **phrasal_verb:** Test the meaning of a phrasal verb found in the text.
+    * **voice_transformation:** Test the ability to convert between active and passive voice.
+2.  **Generate Quiz:** Create a new question that forces the user to apply the structure you identified.
+3.  **Create Answers:** The correct answer must be the grammatically correct option. The incorrect answers should be plausible common mistakes that a {native_lang_name} speaker might make.
+4.  **Explain:** Provide a concise, helpful explanation in {native_lang_name} for the correct answer.
+5.  **Format:** Respond with ONLY a single, valid JSON object that follows the schema below.
+6.  Replace the chosen verb/phrase with exactly one underscore character (_) to create the gap-fill quiz question. Example: "She _ out of the house."
+
+**JSON Output Schema:**
+{MultipleContextQuizResponse.model_json_schema()}
+
+Ensure you generate exactly {quiz_limit} quizzes and each quiz has exactly {answer_limit} answers.
 """

@@ -1,11 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+    refresh_token: str
 
 class TokenData(BaseModel):
-    user_email: int
+    user_email: str
 
 class User(BaseModel):
     id: int
@@ -13,6 +14,7 @@ class User(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     is_active: bool | None = None
+    model_config = ConfigDict(from_attributes=True)
 
 class UserInDB(User):
     hashed_password: str

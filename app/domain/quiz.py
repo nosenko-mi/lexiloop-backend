@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from app.db import schemas
-from app.domain.answer import AbstractAnswer, SequenceAnswer, SimpleAnswer
+from app.domain.answer import AbstractAnswer, ContextAnswer, SequenceAnswer, SimpleAnswer
 
 class AbstractQuiz(ABC):
 
@@ -80,5 +80,30 @@ class SequenceQuiz(AbstractQuiz):
         answer_schemas = [
             schemas.SequenceAnswerCreate(text=a.text, position=a.correct_position)
             for a in self.answers if isinstance(a, SequenceAnswer)
+        ]
+        return quiz_schema, answer_schemas
+
+
+class ContextQuiz(AbstractQuiz):
+
+    def __init__(self, text: str, answers: list, explanation: str, identified_grammar: str) -> None:
+        super().__init__(text, answers)
+        self.explanation = explanation
+        self.identified_grammar = identified_grammar
+
+    def is_valid(self) -> bool:
+        correct_answers = [a for a in self.answers if isinstance(a, ContextAnswer) and a.is_correct]
+        return self.text is not None and len(correct_answers) == 1 and all(a.text for a in self.answers)
+
+    def get_correct_answers(self) -> list[ContextAnswer]:
+        if not self.is_valid():
+            return []
+        return [a for a in self.answers if a.is_correct]
+
+    def to_create_schema(self) -> tuple[schemas.ContextQuizCreate, list[schemas.ContextAnswerCreate]]:
+        quiz_schema = schemas.ContextQuizCreate(text=self.text, explanation=self.explanation, identified_grammar=self.identified_grammar, type_id=4)
+        answer_schemas = [
+            schemas.ContextAnswerCreate(text=a.text, is_correct=a.is_correct)
+            for a in self.answers if isinstance(a, ContextAnswer)
         ]
         return quiz_schema, answer_schemas

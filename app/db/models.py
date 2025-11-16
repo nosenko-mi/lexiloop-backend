@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-
+from sqlalchemy.ext.hybrid import hybrid_property
 from app.db.database import Base
 
 
@@ -92,7 +92,43 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
 
+    settings = relationship(
+        "UserSettings", 
+        back_populates="owner", 
+        uselist=False, 
+        cascade="all, delete-orphan"
+    )
+
     api_keys = relationship("APIKey", back_populates="user")
+
+
+class UserSettings(Base):
+    __tablename__ = "user_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Use ISO 639-1 codes (e.g., "en", "uk")
+    native_language_code = Column(String(10), nullable=False)
+    target_language_code = Column(String(10), nullable=False)
+
+    # The Foreign Key to link to the User.
+    # UNIQUE=True enforces the one-to-one relationship.
+    user_id = Column(
+        Integer, 
+        ForeignKey("users.id", ondelete="CASCADE"), 
+        nullable=False, 
+        unique=True
+    )
+
+    @hybrid_property
+    def user_email(self):
+        """Provides direct access to the owner's email."""
+        if self.owner:
+            return self.owner.email
+        return None
+
+    # The relationship back to the User model
+    owner = relationship("User", back_populates="settings")
 
 
 class APIKey(Base):

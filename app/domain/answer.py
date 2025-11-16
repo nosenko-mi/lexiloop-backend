@@ -23,6 +23,17 @@ class SimpleAnswer(AbstractAnswer):
         return f"{self.text} [Correct = {self.is_correct}]"
     
 
+class ContextAnswer(AbstractAnswer):
+
+    def __init__(self, text: str, is_correct: bool, reasoning: str) -> None:
+        super().__init__(text)
+        self.is_correct = is_correct
+        self.reasoning = reasoning
+
+    def __str__(self) -> str:
+        return f"{self.text} [Correct = {self.is_correct}]"
+    
+
 class SequenceAnswer(AbstractAnswer):
 
     def __init__(self, text: str, correct_position: int) -> None:

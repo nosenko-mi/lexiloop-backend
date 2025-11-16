@@ -1,7 +1,7 @@
 from typing import List, Literal, Union
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from app.models.answer import AnswerDTO, SequenceAnswerDTO, SimpleAnswerDTO
+from app.models.answer import AnswerDTO, ContextAnswerDTO, SequenceAnswerDTO, SimpleAnswerDTO
 
 
 # class QuizDTO(BaseModel):
@@ -9,20 +9,24 @@ from app.models.answer import AnswerDTO, SequenceAnswerDTO, SimpleAnswerDTO
 #     text: str
 #     answers: List[AnswerDTO]
 
-# === Base Quiz DTO (for inheritance) ===
-
 class BaseQuizDTO(BaseModel):
     text: str
 
-
-# === Specific Quiz DTOs ===
 
 class SimpleQuizDTO(BaseQuizDTO):
     type: Literal["simple"]
     answers: List[SimpleAnswerDTO]
 
+
 class SequenceQuizDTO(BaseQuizDTO):
     type: Literal["sequence"]
     answers: List[SequenceAnswerDTO]
 
-QuizDTO = Union[SimpleQuizDTO, SequenceQuizDTO]
+
+class ContextQuizDTO(BaseQuizDTO):
+    type: Literal["context"]
+    answers: List[ContextAnswerDTO]
+    explanation: str
+    identified_grammar: str
+
+QuizDTO = Union[SimpleQuizDTO, SequenceQuizDTO, ContextQuizDTO]

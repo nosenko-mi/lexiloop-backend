@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-
+from pydantic import BaseModel, ConfigDict
+from typing import List
 
 class SimpleAnswerBase(BaseModel):
     text: str
@@ -14,8 +14,8 @@ class SimpleAnswer(SimpleAnswerBase):
     id: int
     quiz_id: int
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class SequenceAnswerBase(BaseModel):
@@ -28,11 +28,28 @@ class SequenceAnswerCreate(SequenceAnswerBase):
 
 
 class SequenceAnswer(SequenceAnswerBase):
+    id: int
     quiz_id: int
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
+class ContextAnswerBase(BaseModel):
+    text: str
+    is_correct: bool
+    reasoning: str
+
+
+class ContextAnswerCreate(ContextAnswerBase):
+    pass
+
+
+class ContextAnswer(ContextAnswerBase):
+    id: int
+    quiz_id: int
+
+    class ConfigDict:
+        from_attributes = True
 
 class SimpleQuizBase(BaseModel):
     text: str
@@ -47,8 +64,8 @@ class SimpleQuiz(SimpleQuizBase):
     id: int
     answers: list[SimpleAnswer] = []
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class SequenceQuizBase(BaseModel):
@@ -64,8 +81,8 @@ class SequenceQuiz(SequenceQuizBase):
     id: int
     answers: list[SequenceAnswer] = []
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class VoiceQuizBase(BaseModel):
@@ -81,9 +98,27 @@ class VoiceQuizCreate(VoiceQuizBase):
 class VoiceQuiz(VoiceQuizBase):
     id: int
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
+
+class ContextQuizBase(BaseModel):
+    text: str
+    explanation: str
+    identified_grammar: str
+    type_id: int
+
+class ContextQuizCreate(ContextQuizBase):
+    pass
+
+
+class ContextQuiz(ContextQuizBase):
+    id: int
+    answers: list[ContextAnswer] = []
+
+    class ConfigDict:
+        from_attributes = True
+        
 
 class TextFeatureBase(BaseModel):
     text: str
@@ -97,8 +132,8 @@ class TextFeature(TextFeatureBase):
     id: int
     dataset_id: int
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class DatasetBase(BaseModel):
@@ -114,5 +149,22 @@ class Dataset(DatasetBase):
     id: int
     entries: list[TextFeature] = []
 
-    class Config:
-        from_attribues = True
+    class ConfigDict:
+        from_attributes = True
+
+
+class UserSettingsBase(BaseModel):
+    """Base schema with common fields."""
+    native_language_code: str
+    target_language_code: str
+
+class UserSettingsCreate(UserSettingsBase):
+    """Schema used for creating or updating settings."""
+    pass
+
+class UserSettings(UserSettingsBase):
+    """Schema used for returning settings from the API."""
+    user_id: int
+
+    class ConfigDict:
+        from_attributes = True

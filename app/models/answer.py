@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from typing import Optional
+from pydantic import BaseModel, Field
 
 
 class AnswerDTO(BaseModel):
@@ -7,6 +8,11 @@ class AnswerDTO(BaseModel):
 
 class SimpleAnswerDTO(BaseModel):
     text: str
+    is_correct: bool
+
+class ContextAnswerDTO(BaseModel):
+    text: str
+    reasoning: str
     is_correct: bool
 
 class SequenceAnswerDTO(BaseModel):
